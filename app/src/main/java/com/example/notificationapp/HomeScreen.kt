@@ -32,10 +32,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import com.example.notificationapp.Navigation.Screen
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun HomeScreen(){
+fun HomeScreen(navController: NavHostController){
     val mainViewModel = hiltViewModel<MainViewModel>()
 
     val context = LocalContext.current
@@ -120,6 +123,11 @@ fun HomeScreen(){
             mainViewModel.updateNotification(context)
         }) {
             Text("Update Notification")
+        }
+        Button(onClick = {
+            navController.navigate(Screen.DetailScreen.passValue("Coming from Home Screen"))
+        }) {
+            Text("Details Screen")
         }
 
         Button(onClick = {

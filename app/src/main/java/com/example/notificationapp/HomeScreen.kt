@@ -124,10 +124,23 @@ fun HomeScreen(navController: NavHostController){
         }) {
             Text("Update Notification")
         }
+
         Button(onClick = {
             navController.navigate(Screen.DetailScreen.passValue("Coming from Home Screen"))
         }) {
             Text("Details Screen")
+        }
+
+        Button(onClick = {
+            mainViewModel.showProgress(context)
+        }) {
+            Text("Progress Notification")
+        }
+
+        Button(onClick = {
+            mainViewModel.showReplyNotification(context)
+        }) {
+            Text("Reply Notification")
         }
 
         Button(onClick = {

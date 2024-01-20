@@ -9,6 +9,8 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.Person
+import androidx.core.app.RemoteInput
 import androidx.core.app.TaskStackBuilder
 import androidx.core.net.toUri
 import com.example.notificationapp.MainActivity
@@ -20,14 +22,17 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Named
 import javax.inject.Singleton
 
+const val RESULT_KEY = "RESULT_KEY"
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
     @Singleton
     @Provides
+    @Named("first_builder")
     fun provideNotificationBuilder(
       @ApplicationContext context: Context
     ) : NotificationCompat.Builder{
@@ -60,6 +65,56 @@ object AppModule {
             .setSmallIcon(R.drawable.ic_baseline_notifications_24)
             .addAction(0,"ACTION", pendingIntent)
             .setContentIntent(clickPendingIntent)
+            .setAutoCancel(true)
+    }
+
+    @Singleton
+    @Provides
+    @Named("second_builder")
+    fun provideSecondNotificationBuilder(
+        @ApplicationContext context: Context
+    ) : NotificationCompat.Builder{
+        return NotificationCompat.Builder(context, "Second Channel ID")
+            .setSmallIcon(R.drawable.ic_baseline_notifications_24)
+            .setOngoing(true)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    @Singleton
+    @Provides
+    @Named("reply_notification_builder")
+    fun provideReplyNotificationBuilder(
+        @ApplicationContext context: Context
+    ) : NotificationCompat.Builder{
+        val remoteInput = RemoteInput.Builder(RESULT_KEY)
+            .setLabel("Type here...")
+            .build()
+
+        val replyIntent = Intent(context, MyReceiver::class.java)
+
+        val replyPendingIntent = PendingIntent.getBroadcast(
+            context,
+            1,
+            replyIntent,
+            PendingIntent.FLAG_MUTABLE
+        )
+
+        val person = Person.Builder().setName("Kofi").build()
+
+        val notificationStyle = NotificationCompat.MessagingStyle(person)
+            .addMessage("Hello there", System.currentTimeMillis(), person)
+
+        val replyAction = NotificationCompat.Action.Builder(
+            0,
+            "Reply",
+            replyPendingIntent
+        ).addRemoteInput(remoteInput).build()
+
+        return NotificationCompat.Builder(context, "Main Channel ID")
+            .setSmallIcon(R.drawable.ic_baseline_notifications_24)
+            .setOnlyAlertOnce(true)
+            .setStyle(notificationStyle)
+            .addAction(replyAction)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -76,7 +131,14 @@ object AppModule {
             NotificationManager.IMPORTANCE_DEFAULT
         )
 
+        val channel2 = NotificationChannel(
+            "Second Channel ID",
+            "Second Channel",
+            NotificationManager.IMPORTANCE_LOW
+        )
+
         notificationManager.createNotificationChannel(channel)
+        notificationManager.createNotificationChannel(channel2)
 
         return notificationManager
     }

@@ -34,6 +34,10 @@ class MyReceiver: BroadcastReceiver() {
                 message,
                 Toast.LENGTH_SHORT
             ).show()
+
+            if(context?.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED){
+                notificationManager.cancel(1)
+            }
         }else{
             val remoteInput = RemoteInput.getResultsFromIntent(intent!!)
 
